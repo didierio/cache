@@ -18,7 +18,7 @@ $app->get('/', function () use ($app) {
 })
 ->bind('homepage');
 
-$app->get('/get', function (Request $request) use ($app) {
+$app->get('/cache', function (Request $request) use ($app) {
     $url = $request->query->get('url');
 
     if (null === $url) {
@@ -47,9 +47,13 @@ $app->get('/get', function (Request $request) use ($app) {
         $content['id'] = $app['db']->insert('content', $content);
     }
 
+    $content['permalink_url'] = $app['url_generator']->generate('hash', [
+        'hash' => $content['hash']
+    ], true);
+
     return new JsonResponse($content);
 })
-->bind('get');
+->bind('cache');
 
 $app->get('/{hash}', function (Request $request, $hash) use ($app) {
     $sql = "SELECT * FROM content WHERE hash = ?";
@@ -66,7 +70,7 @@ $app->get('/{hash}', function (Request $request, $hash) use ($app) {
         'content-type' => $content['content_type'],
     ]);
 })
-->bind('post');
+->bind('hash');
 
 $app->error(function (\Exception $e, $code) use ($app) {
     if ($app['debug']) {
