@@ -18,8 +18,8 @@ $app->get('/', function () use ($app) {
 })
 ->bind('homepage');
 
-$app->get('/cache', function (Request $request) use ($app) {
-    $url = $request->query->get('url');
+$app->post('/cache', function (Request $request) use ($app) {
+    $url = $request->request->get('url');
 
     if (null === $url) {
         throw new BadRequestHttpException('Missing url');
