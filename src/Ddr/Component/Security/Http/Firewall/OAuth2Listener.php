@@ -16,15 +16,13 @@ class OAuth2Listener implements ListenerInterface
 {
     private $securityContext;
     private $authenticationManager;
-    private $EntryPoint;
     private $logger;
     private $ignoreFailure;
 
-    public function __construct(SecurityContextInterface $securityContext, AuthenticationManagerInterface $authenticationManager, AuthenticationEntryPointInterface $entryPoint, LoggerInterface $logger = null)
+    public function __construct(SecurityContextInterface $securityContext, AuthenticationManagerInterface $authenticationManager, LoggerInterface $logger = null)
     {
         $this->securityContext = $securityContext;
         $this->authenticationManager = $authenticationManager;
-        $this->entryPoint = $entryPoint;
         $this->logger = $logger;
         $this->ignoreFailure = false;
     }
@@ -59,8 +57,6 @@ class OAuth2Listener implements ListenerInterface
             if (null !== $this->logger) {
                 $this->logger->info(sprintf('Authentication request failed for user "%s": %s', $username, $failed->getMessage()));
             }
-
-            $this->entryPoint->start($request, $failed);
         }
 
         // By default deny authorization

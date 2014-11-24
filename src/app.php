@@ -20,11 +20,6 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
     return $twig;
 }));
 
-// define the authentication listener object
-$app['api.security.entry_point.oauth2'] = $app->share(function () use ($app) {
-    return new OAuth2EntryPoint();
-});
-
 $app['security.authentication_listener.factory.oauth2'] = $app->protect(function ($name, $options) use ($app) {
     // define the authentication provider object
     $app['security.authentication_provider.'.$name.'.oauth2'] = $app->share(function () use ($app) {
@@ -33,7 +28,7 @@ $app['security.authentication_listener.factory.oauth2'] = $app->protect(function
 
     // define the authentication listener object
     $app['security.authentication_listener.'.$name.'.oauth2'] = $app->share(function () use ($app) {
-        return new OAuth2Listener($app['security'], $app['security.authentication_manager'], $app['api.security.entry_point.oauth2']);
+        return new OAuth2Listener($app['security'], $app['security.authentication_manager']);
     });
 
     return array(
