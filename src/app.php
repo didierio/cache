@@ -23,7 +23,7 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
 $app['security.authentication_listener.factory.oauth2'] = $app->protect(function ($name, $options) use ($app) {
     // define the authentication provider object
     $app['security.authentication_provider.'.$name.'.oauth2'] = $app->share(function () use ($app) {
-        return new OAuth2UserProvider();
+        return new OAuth2UserProvider('http://connect.didier.io/api/me');
     });
 
     // define the authentication listener object
@@ -50,7 +50,6 @@ $app->register(new SecurityServiceProvider(), array(
             'pattern' => '^/api',
             'stateless' => true,
             'oauth2' => true,
-            'anonymous' => false,
         ),
     ]
 ));

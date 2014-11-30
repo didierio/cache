@@ -35,9 +35,8 @@ class OAuth2Listener implements ListenerInterface
     public function handle(GetResponseEvent $event)
     {
         $request = $event->getRequest();
-
         $authorizationRegex = '/Bearer ([^"]+)/';
-        if (!$request->headers->has('Authorization') || 1 !== preg_match($wsseRegex, $request->headers->get('Authorization'), $matches)) {
+        if (!$request->headers->has('Authorization') || 1 !== preg_match($authorizationRegex, $request->headers->get('Authorization'), $matches)) {
             if (null !== $this->logger) {
                 $this->logger->info('Authorization header malformed');
             }
