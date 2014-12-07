@@ -53,7 +53,7 @@ $app['security.authentication_listener.factory.oauth2'] = $app->protect(function
 $app->register(new SecurityServiceProvider(), array(
     'security.firewalls' => [
         'api' => array(
-            'pattern' => '^/api',
+            'pattern' => '^/api/cache',
             'stateless' => true,
             'oauth2' => true,
         ),

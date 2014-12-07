@@ -55,7 +55,7 @@ $app->post('/api/cache', function (Request $request) use ($app) {
 })
 ->bind('cache');
 
-$app->get('/api/cache/{hash}', function (Request $request, $hash) use ($app) {
+$app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
     $sql = "SELECT * FROM content WHERE hash = ?";
     $content = $app['db']->fetchAssoc($sql, array($hash));
 
