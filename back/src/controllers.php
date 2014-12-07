@@ -84,5 +84,8 @@ $app->error(function (\Exception $e, $code) use ($app) {
         'errors/default.html.twig',
     );
 
-    return new Response($app['twig']->resolveTemplate($templates)->render(array('code' => $code)), $code);
+    return new Response($app['twig']->resolveTemplate($templates)->render([
+        'code' => $code,
+        'message' => $e->getMessage(),
+    ]), $code);
 });
