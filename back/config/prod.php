@@ -8,9 +8,10 @@ $app['cache.upload_dir'] = '/var/uploads';
 
 $app['db.options'] = [
     'driver'    => 'pdo_pgsql',
-    'host'      => 'localhost',
-    'dbname'    => 'media',
-    'user'      => 'media',
-    'password'  => 'media',
+    'host'      => 'database',
+    'port'      => 5432,
+    'dbname'    => 'didierio_media',
+    'user'      => 'didierio',
+    'password'  => 'didierio',
     'charset'   => 'utf8',
 ];
