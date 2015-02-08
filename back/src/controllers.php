@@ -19,31 +19,21 @@ $app->get('/', function () use ($app) {
 ->bind('homepage');
 
 $app->post('/api/cache', function (Request $request) use ($app) {
-    $url = $request->request->get('url');
+    $cache = new Cache(__DIR__.sprintf('/../%s', $app['cache.upload_dir']));
 
-    if (null === $url) {
-        throw new BadRequestHttpException('Missing url');
+    try {
+        $requestFile = $cache->handleRequest($request);
+    } catch (BadRequestHttpException $e) {
+        throw $e;
     }
 
     $sql = "SELECT * FROM content WHERE url = ?";
-    $content = $app['db']->fetchAssoc($sql, array($url));
+    $content = $app['db']->fetchAssoc($sql, array($requestFile->getUrl('url')));
 
     if (false === $content) {
-        $client = new Client();
-        $response = $client->get($url);
+        $cache->set($requestFile->getHash(), $requestFile->getData());
 
-        $content = [
-            'url' => $response->getEffectiveUrl(),
-            'content_type' => $response->getHeader('content-type'),
-            'data' => $response->getBody(),
-        ];
-
-        $content['hash'] = md5($content['content_type'].$content['data']->__toString());
-
-        $cache = new Cache(__DIR__.sprintf('/../%s', $app['cache.upload_dir']));
-        $cache->set($content['hash'], $content['data']);
-
-        unset($content['data']);
+        $content = $requestFile->toArray();
         $content['id'] = $app['db']->insert('content', $content);
     }
 
