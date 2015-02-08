@@ -1,8 +1,7 @@
 {
   "name": "app",
   "version": "0.0.0",
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "grunt": "^0.4.1",
     "grunt-autoprefixer": "^0.7.3",
     "grunt-concurrent": "^0.5.0",
@@ -37,6 +36,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "start": "grunt serve",
     "test": "grunt test"
   }
 }
