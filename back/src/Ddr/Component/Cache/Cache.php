@@ -66,6 +66,6 @@ class Cache
             ;
         }
 
-        throw new BadRequestHttpException('No image found in request');
+        throw new BadRequestHttpException('No file found in request');
     }
 }
