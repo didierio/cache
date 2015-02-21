@@ -29,11 +29,9 @@ class Cache
         return $resource;
     }
 
-    public function get($name)
+    public function getFilePath($name)
     {
-        $filename = sprintf('%s/%.5s/%s', $this->directory, $name, $name);
-
-        return file_get_contents($filename);
+        return sprintf('%s/%.5s/%s', $this->directory, $name, $name);
     }
 
     public function handleRequest(Request $request)

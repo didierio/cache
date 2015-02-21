@@ -2,10 +2,11 @@
 
 use Ddr\Component\Cache\Cache;
 use GuzzleHttp\Client;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -54,11 +55,8 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
     }
 
     $cache = new Cache(__DIR__.sprintf('/../.%s', $app['cache.upload_dir']));
-    $data = $cache->get($content['hash']);
 
-    return new Response($data, 200, [
-        'content-type' => $content['content_type'],
-    ]);
+    return new BinaryFileResponse($cache->getFilePath($content['hash']));
 })
 ->bind('hash');
 
