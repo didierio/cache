@@ -1,11 +1,11 @@
-# media.didier.io
+# cache.didier.io
 
 ## Applications
 
 ### back
 
-A Silex application which provides APIs for media management.
+A Silex application which provides REST API.
 
 ### front
 
-An AngularJS application which provides web interface for media management. 
+An AngularJS application which provides web interface. 
