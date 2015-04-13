@@ -15,3 +15,7 @@ $app['db.options'] = [
     'password'  => 'didierio',
     'charset'   => 'utf8',
 ];
+
+$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+    'db.options' => $app['db.options'],
+));

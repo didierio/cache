@@ -9,11 +9,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 $console = new Application('My Silex Application', 'n/a');
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => $app['db.options'],
-));
-
-$app->boot();
+$console->getDefinition()->addOption(new InputOption('--env', '-e', InputOption::VALUE_REQUIRED, 'The Environment name.', 'dev'));
 
 $console
     ->register('doctrine:schema:create')

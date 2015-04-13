@@ -2,16 +2,19 @@
 
 namespace Ddr\Component\Cache;
 
+use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Cache
 {
+    protected $connection;
     protected $directory;
 
-    public function __construct($directory)
+    public function __construct(Connection $connection, $directory)
     {
+        $this->connection = $connection;
         $this->directory = $directory;
     }
 
@@ -43,13 +46,13 @@ class Cache
             $client = new Client();
             $response = $client->get($url);
 
-            return $requestFile
+            $requestFile
                 ->setUrl($response->getEffectiveUrl())
                 ->setContentType($response->getHeader('content-type'))
                 ->setData($response->getBody())
             ;
 
-            return $requestFile;
+            return $this->save($requestFile);
         }
 
         $content = trim($request->getContent());
@@ -59,13 +62,31 @@ class Cache
             $mimeType = finfo_buffer($finfo, $content, FILEINFO_MIME_TYPE);
             finfo_close($finfo);
 
-            return $requestFile
+            $requestFile
                 ->setUrl(md5($content))
                 ->setContentType($mimeType)
                 ->setData($content)
             ;
+
+            return $this->save($requestFile);
         }
 
         throw new BadRequestHttpException('No file found in request');
+    }
+
+    public function save(RequestFile $requestFile)
+    {
+        $sql = "SELECT * FROM content WHERE url = ?";
+        $content = $this->connection->fetchAssoc($sql, array($requestFile->getUrl('url')));
+
+        if (false === $content) {
+            $cache->set($requestFile->getHash(), $requestFile->getData());
+
+            $content = $requestFile->toArray();
+            $content['id'] = $this->connection->insert('content', $content);
+        }
+
+        return $content;
+
     }
 }

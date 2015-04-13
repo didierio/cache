@@ -10,33 +10,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => $app['db.options'],
-));
-
 $app->get('/', function () use ($app) {
     return $app['twig']->render('index.html.twig', array());
 })
 ->bind('homepage');
 
 $app->post('/api/cache', function (Request $request) use ($app) {
-    $cache = new Cache(__DIR__.sprintf('/../%s', $app['cache.upload_dir']));
-
-    try {
-        $requestFile = $cache->handleRequest($request);
-    } catch (BadRequestHttpException $e) {
-        throw $e;
-    }
-
-    $sql = "SELECT * FROM content WHERE url = ?";
-    $content = $app['db']->fetchAssoc($sql, array($requestFile->getUrl('url')));
-
-    if (false === $content) {
-        $cache->set($requestFile->getHash(), $requestFile->getData());
-
-        $content = $requestFile->toArray();
-        $content['id'] = $app['db']->insert('content', $content);
-    }
+    $content = $app['cache']->handleRequest($request);
 
     $content['permalink_url'] = $app['url_generator']->generate('hash', [
         'hash' => $content['hash']
@@ -54,9 +34,7 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
-    $cache = new Cache(__DIR__.sprintf('/../.%s', $app['cache.upload_dir']));
-
-    return new BinaryFileResponse($cache->getFilePath($content['hash']));
+    return new BinaryFileResponse($app['cache']->getFilePath($content['hash']));
 })
 ->bind('hash');
 
