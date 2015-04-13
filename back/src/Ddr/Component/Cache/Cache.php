@@ -80,13 +80,19 @@ class Cache
         $content = $this->connection->fetchAssoc($sql, array($requestFile->getUrl('url')));
 
         if (false === $content) {
-            $cache->set($requestFile->getHash(), $requestFile->getData());
+            $this->set($requestFile->getHash(), $requestFile->getData());
 
             $content = $requestFile->toArray();
             $content['id'] = $this->connection->insert('content', $content);
         }
 
         return $content;
+    }
 
+    public function find($hash)
+    {
+        $sql = "SELECT * FROM content WHERE hash = ?";
+
+        return $this->connection->fetchAssoc($sql, array($hash));
     }
 }
