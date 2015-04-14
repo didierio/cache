@@ -50,6 +50,7 @@ class Cache
                 ->setUrl($response->getEffectiveUrl())
                 ->setContentType($response->getHeader('content-type'))
                 ->setData($response->getBody())
+                ->setTags($response->getTags())
             ;
 
             return $this->save($requestFile);
@@ -66,6 +67,7 @@ class Cache
                 ->setUrl(md5($content))
                 ->setContentType($mimeType)
                 ->setData($content)
+                ->setTags($response->getTags())
             ;
 
             return $this->save($requestFile);

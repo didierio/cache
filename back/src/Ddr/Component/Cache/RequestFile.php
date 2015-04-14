@@ -7,6 +7,7 @@ class RequestFile
     protected $url;
     protected $contentType;
     protected $data;
+    protected $tags;
 
     public function getUrl()
     {
@@ -49,12 +50,25 @@ class RequestFile
         return md5($this->getContentType().$this->getData());
     }
 
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
+    public function setTags($tags)
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
     public function toArray()
     {
         return [
             'content_type' => $this->getContentType(),
             'hash' => $this->getHash(),
             'url' => $this->getUrl(),
+            'tags' => $this->getTags(),
         ];
     }
 }

@@ -16,6 +16,20 @@ $app['db.options'] = [
     'charset'   => 'utf8',
 ];
 
-$app->register(new Silex\Provider\DoctrineServiceProvider(), array(
+$app->register(new Silex\Provider\DoctrineServiceProvider(), [
     'db.options' => $app['db.options'],
-));
+]);
+
+$app->register(new Dflydev\Silex\Provider\DoctrineOrm\DoctrineOrmServiceProvider, [
+        "orm.em.options" => [
+            "mappings" => [
+                [
+                    "type"                         => "annotation",
+                    "namespace"                    => "Ddr\Entity",
+                    "path"                         => realpath(__DIR__."/../src/Ddr/Entity"),
+                    "use_simple_annotation_reader" => false,
+                ],
+            ],
+        ],
+    ]
+);
