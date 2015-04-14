@@ -36,7 +36,7 @@ class Content
     protected $hash;
 
     /**
-     * @ORM\Column(type="array")
+     * @ORM\Column(type="array", nullable=true)
      */
     protected $tags;
 
