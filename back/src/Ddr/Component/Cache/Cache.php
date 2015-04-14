@@ -37,7 +37,7 @@ class Cache
         return sprintf('%s/%.5s/%s', $this->directory, $name, $name);
     }
 
-    public function handleRequest(Request $request)
+    public function handleRequest(Request $request, $content)
     {
         $requestFile = new RequestFile();
 
@@ -52,7 +52,7 @@ class Cache
                 ->setData($response->getBody())
             ;
 
-            return $this->save($requestFile);
+            return array_merge($content, $this->save($requestFile));
         }
 
         $content = trim($request->getContent());
@@ -68,7 +68,7 @@ class Cache
                 ->setData($content)
             ;
 
-            return $this->save($requestFile);
+            return array_merge($content, $this->save($requestFile));
         }
 
         throw new BadRequestHttpException('No file found in request');

@@ -16,7 +16,8 @@ $app->get('/', function () use ($app) {
 ->bind('homepage');
 
 $app->post('/api/cache', function (Request $request) use ($app) {
-    $content = $app['cache']->handleRequest($request);
+    $content = [];
+    $content = $app['cache']->handleRequest($request, $content);
 
     $content['permalink_url'] = $app['url_generator']->generate('hash', [
         'hash' => $content['hash']
