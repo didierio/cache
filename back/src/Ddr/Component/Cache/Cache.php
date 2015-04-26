@@ -2,6 +2,8 @@
 
 namespace Ddr\Component\Cache;
 
+use Ddr\Entity\Content;
+use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Request;
@@ -9,12 +11,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class Cache
 {
-    protected $connection;
+    protected $objectManager;
     protected $directory;
 
-    public function __construct(Connection $connection, $directory)
+    public function __construct(ObjectManager $objectManager, $directory)
     {
-        $this->connection = $connection;
+        $this->objectManager = $objectManager;
         $this->directory = $directory;
     }
 
@@ -39,60 +41,57 @@ class Cache
 
     public function handleRequest(Request $request)
     {
-        $requestFile = new RequestFile();
-
         if ($request->request->has('url')) {
             $url = $request->request->get('url');
             $client = new Client();
             $response = $client->get($url);
+            $content = new Content($response->getHeader('content-type'), $response->getBody());
 
-            $requestFile
+            $content
                 ->setUrl($response->getEffectiveUrl())
-                ->setContentType($response->getHeader('content-type'))
-                ->setData($response->getBody())
+                ->setTags(explode(', ', $request->request->get('tags')))
             ;
 
-            return $this->save($requestFile);
+            return $this->save($content);
         }
 
-        $content = trim($request->getContent());
+        $contentData = trim($request->getContent());
 
-        if (null !== $content && '' !== $content) {
+        if (null !== $contentData && '' !== $contentData) {
             $finfo = finfo_open();
-            $mimeType = finfo_buffer($finfo, $content, FILEINFO_MIME_TYPE);
+            $mimeType = finfo_buffer($finfo, $contentData, FILEINFO_MIME_TYPE);
             finfo_close($finfo);
 
-            $requestFile
-                ->setUrl(md5($content))
-                ->setContentType($mimeType)
-                ->setData($content)
+            $content = new Content($mimeType, $contentData);
+            $content
+                ->setTags(explode(', ', $request->request->get('tags')))
             ;
 
-            return $this->save($requestFile);
+            return $this->save($content);
         }
 
         throw new BadRequestHttpException('No file found in request');
     }
 
-    public function save(RequestFile $requestFile)
+    public function save(Content $content)
     {
-        $sql = "SELECT * FROM content WHERE url = ?";
-        $content = $this->connection->fetchAssoc($sql, array($requestFile->getUrl('url')));
+        if (false === $this->exists($content->getUrl())) {
+            $this->set($content->getHash(), $content->getData());
 
-        if (false === $content) {
-            $this->set($requestFile->getHash(), $requestFile->getData());
-
-            $content = $requestFile->toArray();
-            $content['id'] = $this->connection->insert('content', $content);
+            $this->objectManager->persist($content);
+            $this->objectManager->flush($content);
         }
 
         return $content;
     }
 
+    public function exists($url)
+    {
+        return null !== $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('url' => $url));
+    }
+
     public function find($hash)
     {
-        $sql = "SELECT * FROM content WHERE hash = ?";
-
-        return $this->connection->fetchAssoc($sql, array($hash));
+        return $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('hash' => $hash));
     }
 }

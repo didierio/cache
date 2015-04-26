@@ -16,7 +16,7 @@ $app->register(new Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\TwigServiceProvider());
 
 $app['cache'] = function ($app) {
-    return new Cache($app['db'], __DIR__.sprintf('/../%s', $app['cache.upload_dir']));
+    return new Cache($app['orm.ems']['default'], __DIR__.sprintf('/../%s', $app['cache.upload_dir']));
 };
 
 $app['security.authentication_listener.factory.oauth2'] = $app->protect(function ($name, $options) use ($app) {
