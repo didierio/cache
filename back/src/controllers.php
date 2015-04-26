@@ -18,8 +18,9 @@ $app->get('/', function () use ($app) {
 $app->post('/api/cache', function (Request $request) use ($app) {
     $content = $app['cache']->handleRequest($request);
 
+    $content = $content->toArray();
     $content['permalink_url'] = $app['url_generator']->generate('hash', [
-        'hash' => $content['hash']
+        'hash' => $content['hash'],
     ], true);
 
     return new JsonResponse($content);
@@ -30,6 +31,8 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
+
+    $content = $content->toArray();
 
     return new BinaryFileResponse($app['cache']->getFilePath($content['hash']));
 })

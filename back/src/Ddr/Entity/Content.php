@@ -17,6 +17,7 @@ class Content
     /**
      * @ORM\Id
      * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
     protected $id;
 
@@ -26,7 +27,7 @@ class Content
     protected $contentType;
 
     /**
-     * @ORM\Column(type="string", length=2048)
+     * @ORM\Column(type="string", length=2048, nullable=true)
      */
     protected $url;
 
@@ -39,6 +40,16 @@ class Content
      * @ORM\Column(type="array", nullable=true)
      */
     protected $tags;
+
+    protected $data;
+
+    public function __construct($contentType, $data)
+    {
+        $this->contentType = $contentType;
+        $this->data = $data;
+
+        $this->hash = md5(sprintf('%s%s', $this->contentType, $this->data));
+    }
 
     public function getId()
     {
@@ -74,13 +85,6 @@ class Content
         return $this->hash;
     }
 
-    public function setHash($hash)
-    {
-        $this->hash = $hash;
-
-        return $this;
-    }
-
     public function getTags()
     {
         return $this->tags;
@@ -91,5 +95,20 @@ class Content
         $this->tags = $tags;
 
         return $this;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    public function toArray()
+    {
+        return [
+            'content_type' => $this->contentType,
+            'hash' => $this->hash,
+            'url' => $this->url,
+            'tags' => implode(', ', $this->tags),
+        ];
     }
 }
