@@ -87,7 +87,7 @@ class Content
 
     public function getTags()
     {
-        if (null === $tags) {
+        if (null === $this->tags) {
             return array();
         }
 
