@@ -87,6 +87,10 @@ class Content
 
     public function getTags()
     {
+        if (null === $tags) {
+            return array();
+        }
+
         return $this->tags;
     }
 
@@ -108,7 +112,7 @@ class Content
             'content_type' => $this->contentType,
             'hash' => $this->hash,
             'url' => $this->url,
-            'tags' => implode(', ', $this->tags),
+            'tags' => implode(', ', $this->getTags()),
         ];
     }
 }
