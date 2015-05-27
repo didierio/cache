@@ -75,7 +75,7 @@ class Cache
 
     public function save(Content $content)
     {
-        if (false === $this->exists($content->getUrl())) {
+        if (false === $this->exists($content->getHash())) {
             $this->set($content->getHash(), $content->getData());
 
             $this->objectManager->persist($content);
@@ -85,9 +85,9 @@ class Cache
         return $content;
     }
 
-    public function exists($url)
+    public function exists($hash)
     {
-        return null !== $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('url' => $url));
+        return null !== $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('hash' => $hash));
     }
 
     public function find($hash)
