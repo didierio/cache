@@ -2,6 +2,7 @@
 
 use Ddr\Component\Cache\Cache;
 use Ddr\Component\OAuth2\Storage\GuzzleStorage;
+use Ddr\Component\Security\Core\Authentication\Provider\OAuth2AuthentificationProvider;
 use Ddr\Component\Security\Core\User\OAuth2UserProvider;
 use Ddr\Component\Security\EntryPoint\OAuth2EntryPoint;
 use Ddr\Component\Security\Http\Firewall\OAuth2Listener;
@@ -25,11 +26,15 @@ $app['security.authentication_listener.factory.oauth2'] = $app->protect(function
     });
 
     $app['security.authentication_provider.'.$name.'.oauth2'] = $app->share(function () use ($app) {
-        return new OAuth2UserProvider($app['oauth2.service'], $app['security.user_checker']);
+        return new OAuth2UserProvider();
     });
 
     $app['security.authentication_listener.'.$name.'.oauth2'] = $app->share(function () use ($app) {
         return new OAuth2Listener($app['security'], $app['security.authentication_manager']);
+    });
+
+    $app['security.authentication_provider.'.$name.'.oauth2'] = $app->share(function () use ($app) {
+        return new OAuth2AuthentificationProvider($app['oauth2.service'], $app['security.user_checker']);
     });
 
     return array(
