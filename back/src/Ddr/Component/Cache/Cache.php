@@ -94,4 +94,10 @@ class Cache
     {
         return $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('hash' => $hash));
     }
+
+    public function remove(Content $content)
+    {
+        $this->objectManager->remove($content);
+        $this->objectManager->flush($content);
+    }
 }

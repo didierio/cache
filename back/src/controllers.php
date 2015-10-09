@@ -38,6 +38,17 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
 })
 ->bind('hash');
 
+$app->get('/api/cache/{hash}/remove', function (Request $request, $hash) use ($app) {
+    if (null === $content = $app['cache']->find($hash)) {
+        throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
+    }
+
+    $app['cache']->remove($content);
+
+    return new JsonResponse();
+})
+->bind('remove');
+
 $app->error(function (\Exception $e, $code) use ($app) {
     if ($app['debug']) {
         return;
