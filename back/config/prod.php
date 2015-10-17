@@ -1,10 +1,14 @@
 <?php
 
-// configure your app for the production environment
+use Silex\Provider;
+
+$app->register(new Provider\HttpFragmentServiceProvider());
+$app->register(new Provider\ServiceControllerServiceProvider());
+$app->register(new Provider\TwigServiceProvider());
 
 $app['twig.path'] = array(__DIR__.'/../templates');
 $app['twig.options'] = array('cache' => __DIR__.'/../var/cache/twig');
-$app['cache.upload_dir'] = 'var/uploads';
+$app['cache.upload_dir'] = __DIR__.'/../var/uploads';
 
 $app['db.options'] = [
     'driver'    => 'pdo_pgsql',
@@ -16,7 +20,7 @@ $app['db.options'] = [
     'charset'   => 'utf8',
 ];
 
-$app->register(new Silex\Provider\DoctrineServiceProvider(), [
+$app->register(new Provider\DoctrineServiceProvider(), [
     'db.options' => $app['db.options'],
 ]);
 
