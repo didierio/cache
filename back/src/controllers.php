@@ -3,6 +3,7 @@
 use Ddr\Component\Cache\Cache;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,56 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
 })
 ->bind('hash');
 
+$app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
+    if (null === $content = $app['cache']->find($hash)) {
+        throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
+    }
+
+    $extensionGuesser = ExtensionGuesser::getInstance();
+    $content = $content->toArray();
+    $image = file_get_contents($app['cache']->getFilePath($content['hash']));
+
+    if ($request->query->has('width') || $request->query->has('height')) {
+        $image = $app['image_optimizer']->resize(
+            $image,
+            $extensionGuesser->guess($content['content_type']),
+            $request->query->get('width', null),
+            $request->query->get('height', null)
+        );
+    }
+
+    return new Response($image, 200, array(
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'public',
+        'Content-Type' => $content['content_type'],
+        'Content-Length' => strlen($image),
+    ));
+})
+->bind('photo');
+
+$app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use ($app) {
+    if (null === $content = $app['cache']->find($hash)) {
+        throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
+    }
+
+    $extensionGuesser = ExtensionGuesser::getInstance();
+    $content = $content->toArray();
+    $image = $app['image_optimizer']->thumbnail(
+        file_get_contents($app['cache']->getFilePath($content['hash'])),
+        $extensionGuesser->guess($content['content_type']),
+        $request->query->get('width', null),
+        $request->query->get('height', null)
+    );
+
+    return new Response($image, 200, array(
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'public',
+        'Content-Type' => $content['content_type'],
+        'Content-Length' => strlen($image),
+    ));
+})
+->bind('photo_thumbnail');
+
 $app->get('/api/cache/{hash}/remove', function (Request $request, $hash) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
@@ -51,7 +102,7 @@ $app->get('/api/cache/{hash}/remove', function (Request $request, $hash) use ($a
 
 $app->error(function (\Exception $e, $code) use ($app) {
     if ($app['debug']) {
-        return;
+        throw $e;
     }
 
     $templates = array(

@@ -1,6 +1,7 @@
 <?php
 
 use Ddr\Component\Cache\Cache;
+use Ddr\Component\Imagine\ImageOptimizer;
 use Ddr\Component\OAuth2\Storage\GuzzleStorage;
 use Ddr\Component\Security\Core\Authentication\Provider\OAuth2AuthentificationProvider;
 use Ddr\Component\Security\Core\User\OAuth2UserProvider;
@@ -17,7 +18,7 @@ $app->register(new Provider\ServiceControllerServiceProvider());
 $app->register(new Provider\TwigServiceProvider());
 
 $app['cache'] = function ($app) {
-    return new Cache($app['orm.ems']['default'], __DIR__.sprintf('/../%s', $app['cache.upload_dir']));
+    return new Cache($app['orm.ems']['default'], $app['cache.upload_dir']);
 };
 
 $app['security.authentication_listener.factory.oauth2'] = $app->protect(function ($name, $options) use ($app) {
@@ -54,5 +55,18 @@ $app->register(new Provider\SecurityServiceProvider(), array(
         ),
     ]
 ));
+
+$app['image_optimizer'] = function ($app) {
+    return new ImageOptimizer(array(
+       'jpegoptim' => array(
+           'bin' => '/usr/bin/jpegoptim',
+           'max' => 70,
+       ),
+        'thumbnail' => array(
+            'width' => 200,
+            'height' => 200,
+        ),
+    ));
+};
 
 return $app;
