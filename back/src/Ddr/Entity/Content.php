@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping\Table;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="content")
+ * @ORM\Table(name="content", repository="Ddr\Entity\Repository\ContentRepository")
  */
 class Content
 {
@@ -41,14 +41,24 @@ class Content
      */
     protected $tags;
 
+    /**
+     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     */
+    protected $createdAt;
+
     protected $data;
 
-    public function __construct($contentType, $data)
+    public function __construct($contentType, $data, \DateTime $createdAt = null)
     {
         $this->contentType = $contentType;
         $this->data = $data;
-
         $this->hash = md5(sprintf('%s%s', $this->contentType, $this->data));
+
+        if (null === $createdAt) {
+            $createdAt = new \DateTime();
+        }
+
+        $this->createdAt = $createdAt;
     }
 
     public function getId()

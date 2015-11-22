@@ -16,7 +16,7 @@ $app->get('/', function () use ($app) {
 })
 ->bind('homepage');
 
-$app->post('/api/cache', function (Request $request) use ($app) {
+$app->post('/cache', function (Request $request) use ($app) {
     $content = $app['cache']->handleRequest($request);
 
     $content = $content->toArray();
@@ -28,7 +28,7 @@ $app->post('/api/cache', function (Request $request) use ($app) {
 })
 ->bind('cache');
 
-$app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
+$app->get('/{hash}', function (Request $request, $hash) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
@@ -39,8 +39,9 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
 })
 ->bind('hash');
 
-$app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
-    if (null === $content = $app['cache']->find($hash)) {
+
+$app->get('/search', function (Request $request) use ($app) {
+    if (null === $content = $app['cache']->all()) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
@@ -64,9 +65,36 @@ $app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
         'Content-Length' => strlen($image),
     ));
 })
-->bind('photo');
+->bind('search');
 
-$app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use ($app) {
+$app->get('/{hash}/picture', function (Request $request, $hash) use ($app) {
+    if (null === $content = $app['cache']->find($hash)) {
+        throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
+    }
+
+    $content = $content->toArray();
+    $image = file_get_contents($app['cache']->getFilePath($content['hash']));
+
+    if ($request->query->has('width') || $request->query->has('height')) {
+        $extensionGuesser = ExtensionGuesser::getInstance();
+        $image = $app['image_optimizer']->resize(
+            $image,
+            $extensionGuesser->guess($content['content_type']),
+            $request->query->get('width', null),
+            $request->query->get('height', null)
+        );
+    }
+
+    return new Response($image, 200, array(
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'public',
+        'Content-Type' => $content['content_type'],
+        'Content-Length' => strlen($image),
+    ));
+})
+->bind('picture');
+
+$app->get('/{hash}/thumbnail', function (Request $request, $hash) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
@@ -89,7 +117,7 @@ $app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use
 })
 ->bind('photo_thumbnail');
 
-$app->get('/api/cache/{hash}/remove', function (Request $request, $hash) use ($app) {
+$app->get('/{hash}/remove', function (Request $request, $hash) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }

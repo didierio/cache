@@ -90,6 +90,11 @@ class Cache
         return null !== $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('hash' => $hash));
     }
 
+    public function since(Content $content = null)
+    {
+
+    }
+
     public function find($hash)
     {
         return $this->objectManager->getRepository('Ddr\Entity\Content')->findOneBy(array('hash' => $hash));
