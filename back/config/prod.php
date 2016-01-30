@@ -37,3 +37,9 @@ $app->register(new Dflydev\Silex\Provider\DoctrineOrm\DoctrineOrmServiceProvider
         ],
     ]
 );
+
+if ($app['debug'] !== true) {
+    $app->register(new Provider\HttpCacheServiceProvider(), array(
+        'http_cache.cache_dir' => __DIR__.'/cache/',
+    ));
+}
