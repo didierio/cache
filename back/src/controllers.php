@@ -37,6 +37,7 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
     $createdAt = \DateTime::createFromFormat('U', filectime($path));
 
     return new BinaryFileResponse($path, 200, array(
+        'Cache-Control' => 'public',
         'Last-Modified' => $createdAt,
         'Etag' => sprintf('content_%d_%d', $createdAt->getTimestamp(), $content->getId()),
     ));
@@ -65,10 +66,11 @@ $app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
 
     return new Response($image, 200, array(
         'Accept-Ranges' => 'bytes',
-        'Last-Modified' => $createdAt,
-        'Etag' => sprintf('photo_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
         'Content-Type' => $content->getContentType(),
         'Content-Length' => strlen($image),
+        'Cache-Control' => 'public',
+        'Last-Modified' => $createdAt,
+        'Etag' => sprintf('photo_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
     ));
 })
 ->bind('photo');
@@ -91,10 +93,11 @@ $app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use
 
     return new Response($image, 200, array(
         'Accept-Ranges' => 'bytes',
-        'Last-Modified' => $createdAt,
-        'Etag' => sprintf('photo_thumbnail_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
         'Content-Type' => $content->getContentType(),
         'Content-Length' => strlen($image),
+        'Cache-Control' => 'public',
+        'Last-Modified' => $createdAt,
+        'Etag' => sprintf('photo_thumbnail_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
     ));
 })
 ->bind('photo_thumbnail');
