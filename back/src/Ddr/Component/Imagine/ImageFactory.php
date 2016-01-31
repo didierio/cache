@@ -6,7 +6,7 @@ use Imagine\Gd\Imagine;
 
 abstract class ImageFactory
 {
-    public function fromStream($stream)
+    public static function fromStream($stream)
     {
         $imagine = new Imagine();
         $image = $imagine->load($stream);
