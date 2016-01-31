@@ -33,9 +33,13 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
-    $content = $content->toArray();
+    $path = $app['cache']->getFilePath($content->getHash());
+    $createdAt = \DateTime::createFromFormat('U', filectime($path));
 
-    return new BinaryFileResponse($app['cache']->getFilePath($content['hash']));
+    return new BinaryFileResponse($path, 200, array(
+        'Last-Modified' => $createdAt,
+        'Etag' => sprintf('content_%d_%d', $createdAt->getTimestamp(), $content->getId()),
+    ));
 })
 ->bind('hash');
 
@@ -45,22 +49,25 @@ $app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
     }
 
     $extensionGuesser = ExtensionGuesser::getInstance();
-    $content = $content->toArray();
-    $image = file_get_contents($app['cache']->getFilePath($content['hash']));
+    $path = $app['cache']->getFilePath($content->getHash());
+    $image = file_get_contents($path);
 
     if ($request->query->has('width') || $request->query->has('height')) {
         $image = $app['image_optimizer']->resize(
             $image,
-            $extensionGuesser->guess($content['content_type']),
+            $extensionGuesser->guess($content->getContentType()),
             $request->query->get('width', null),
             $request->query->get('height', null)
         );
     }
 
+    $createdAt = \DateTime::createFromFormat('U', filectime($path));
+
     return new Response($image, 200, array(
         'Accept-Ranges' => 'bytes',
-        'Cache-Control' => 'public',
-        'Content-Type' => $content['content_type'],
+        'Last-Modified' => $createdAt,
+        'Etag' => sprintf('photo_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
+        'Content-Type' => $content->getContentType(),
         'Content-Length' => strlen($image),
     ));
 })
@@ -72,18 +79,21 @@ $app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use
     }
 
     $extensionGuesser = ExtensionGuesser::getInstance();
-    $content = $content->toArray();
+    $path = $app['cache']->getFilePath($content->getHash());
     $image = $app['image_optimizer']->thumbnail(
-        file_get_contents($app['cache']->getFilePath($content['hash'])),
-        $extensionGuesser->guess($content['content_type']),
+        file_get_contents($path),
+        $extensionGuesser->guess($content->getContentType()),
         $request->query->get('width', null),
         $request->query->get('height', null)
     );
 
+    $createdAt = \DateTime::createFromFormat('U', filectime($path));
+
     return new Response($image, 200, array(
         'Accept-Ranges' => 'bytes',
-        'Cache-Control' => 'public',
-        'Content-Type' => $content['content_type'],
+        'Last-Modified' => $createdAt,
+        'Etag' => sprintf('photo_thumbnail_%d_%d_%s_%s', $createdAt->getTimestamp(), $content->getId(), $request->query->get('width', 'x'), $request->query->get('height', 'x')),
+        'Content-Type' => $content->getContentType(),
         'Content-Length' => strlen($image),
     ));
 })
