@@ -14,3 +14,4 @@ $app = require __DIR__.'/../src/app.php';
 require __DIR__.'/../config/'.$env.'.php';
 $console = require __DIR__.'/../src/console.php';
 $console->run();
+

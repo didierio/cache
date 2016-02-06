@@ -12,7 +12,7 @@ $app['cache.upload_dir'] = __DIR__.'/../var/uploads';
 
 $app['db.options'] = [
     'driver'    => 'pdo_pgsql',
-    'host'      => 'db_cache_back',
+    'host'      => 'db_cache',
     'port'      => '10001',
     'dbname'    => 'didierio_cache',
     'user'      => 'didierio_cache',
