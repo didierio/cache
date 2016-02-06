@@ -23,8 +23,6 @@ if [ ! -d vendor ]; then
 fi
 
 echo ">>> Dropping database"
-php bin/console doctrine:database:drop --force
+php bin/console orm:schema-tool:drop --force
 echo ">>> Creating database"
-php bin/console doctrine:database:create
-echo ">>> Creating SQL schema"
-php bin/console doctrine:schema:create
+php bin/console orm:schema-tool:create
