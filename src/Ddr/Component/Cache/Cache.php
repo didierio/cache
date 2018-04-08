@@ -55,7 +55,7 @@ class Cache
             return $this->save($content);
         }
 
-        $contentData = trim($request->getContent());
+        $contentData = $request->getContent();
 
         if (null !== $contentData && '' !== $contentData) {
             $finfo = finfo_open();
