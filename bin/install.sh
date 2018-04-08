@@ -12,6 +12,9 @@ echo ""
 echo ">>> Cleanup cache"
 rm -rf var/{cache,logs}/*
 
+echo ">>> Cleanup uploads"
+rm -rf var/uploads/*
+
 if [ ! -f composer.phar ]; then
     echo ">>> Downloading composer.phar"
     curl -s http://getcomposer.org/installer | php
