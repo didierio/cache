@@ -23,7 +23,7 @@ $app['cache'] = function ($app) {
 
 $app['security.authentication_listener.factory.oauth2'] = $app->protect(function ($name, $options) use ($app) {
     $app['oauth2.service'] = $app->share(function () use ($app) {
-        return new OAuth2(new GuzzleStorage('http://connect.didier.io'));
+        return new OAuth2(new GuzzleStorage('https://connect.didier.io'));
     });
 
     $app['security.authentication_provider.'.$name.'.oauth2'] = $app->share(function () use ($app) {
