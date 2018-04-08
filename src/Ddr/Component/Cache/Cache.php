@@ -62,6 +62,10 @@ class Cache
             $mimeType = finfo_buffer($finfo, $contentData, FILEINFO_MIME_TYPE);
             finfo_close($finfo);
 
+            if ('application/octet-stream' === $mimeType) {
+                $mimeType = $request->headers->get('content-type', $mimeType);
+            }
+
             $content = new Content($mimeType, $contentData);
             $content
                 ->setTags(explode(', ', $request->request->get('tags')))
