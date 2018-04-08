@@ -2,7 +2,6 @@
 
 use Ddr\Component\Cache\Cache;
 use GuzzleHttp\Client;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,29 +18,37 @@ $app->get('/', function () use ($app) {
 $app->post('/api/cache', function (Request $request) use ($app) {
     $content = $app['cache']->handleRequest($request);
 
-    $content = $content->toArray();
-    $content['permalink_url'] = $app['url_generator']->generate('hash', [
-        'hash' => $content['hash'],
+    $data = $content->toArray();
+    $data['permalink_url'] = $app['url_generator']->generate('content', [
+        'hash' => $content->getHash(),
+        'extension' => $app['extension_guesser']->guess($content->getContentType()),
     ], true);
 
-    return new JsonResponse($content);
+    return new JsonResponse($data);
 })
 ->bind('cache');
 
-$app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
+$app->get('/{hash}.{extension}', function ($hash, $extension) use ($app) {
     if (null === $content = $app['cache']->find($hash)) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
-    $path = $app['cache']->getFilePath($content->getHash());
-    $createdAt = \DateTime::createFromFormat('U', filectime($path));
+    $mimeType = $app['extension_guesser']->guess($content->getContentType());
 
-    return new BinaryFileResponse($path, 200, array(
-        'Cache-Control' => 'public',
-        'Last-Modified' => $createdAt,
-        'Content-Type' => $content->getContentType(),
-        'Etag' => sprintf('content_%d_%d', $createdAt->getTimestamp(), $content->getId()),
-    ));
+    if ($extension !== $mimeType) {
+        throw new NotFoundHttpException(sprintf('Content must have "%s" as extension', $mimeType));
+    }
+
+    return $app['cache']->createResponse($content);
+})
+->bind('content');
+
+$app->get('/api/get/{hash}', function ($hash) use ($app) {
+    if (null === $content = $app['cache']->find($hash)) {
+        throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
+    }
+
+    return $app['cache']->createResponse($content);
 })
 ->bind('hash');
 
@@ -50,14 +57,13 @@ $app->get('/api/photos/{hash}', function (Request $request, $hash) use ($app) {
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
-    $extensionGuesser = ExtensionGuesser::getInstance();
     $path = $app['cache']->getFilePath($content->getHash());
     $image = file_get_contents($path);
 
     if ($request->query->has('width') || $request->query->has('height')) {
         $image = $app['image_optimizer']->resize(
             $image,
-            $extensionGuesser->guess($content->getContentType()),
+            $app['extension_guesser']->guess($content->getContentType()),
             $request->query->get('width', null),
             $request->query->get('height', null)
         );
@@ -81,11 +87,10 @@ $app->get('/api/photos/{hash}/thumbnail', function (Request $request, $hash) use
         throw new NotFoundHttpException(sprintf('No content for #%s', $hash));
     }
 
-    $extensionGuesser = ExtensionGuesser::getInstance();
     $path = $app['cache']->getFilePath($content->getHash());
     $image = $app['image_optimizer']->thumbnail(
         file_get_contents($path),
-        $extensionGuesser->guess($content->getContentType()),
+        $app['extension_guesser']->guess($content->getContentType()),
         $request->query->get('width', null),
         $request->query->get('height', null)
     );

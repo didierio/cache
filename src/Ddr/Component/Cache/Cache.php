@@ -6,6 +6,7 @@ use Ddr\Entity\Content;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -87,6 +88,19 @@ class Cache
         }
 
         return $content;
+    }
+
+    public function createResponse(Content $content)
+    {
+        $path = $this->getFilePath($content->getHash());
+        $createdAt = \DateTime::createFromFormat('U', filectime($path));
+
+        return new BinaryFileResponse($path, 200, array(
+            'Cache-Control' => 'public',
+            'Last-Modified' => $createdAt,
+            'Content-Type' => $content->getContentType(),
+            'Etag' => sprintf('content_%d_%d', $createdAt->getTimestamp(), $content->getId()),
+        ));
     }
 
     public function exists($hash)

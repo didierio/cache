@@ -10,6 +10,7 @@ use Ddr\Component\Security\Http\Firewall\OAuth2Listener;
 use OAuth2\OAuth2;
 use Silex\Application;
 use Silex\Provider;
+use Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser;
 
 $app = new Application();
 
@@ -55,6 +56,10 @@ $app->register(new Provider\SecurityServiceProvider(), array(
         ),
     ]
 ));
+
+$app['extension_guesser'] = function () {
+    return ExtensionGuesser::getInstance();
+};
 
 $app['image_optimizer'] = function ($app) {
     return new ImageOptimizer(array(
