@@ -39,6 +39,7 @@ $app->get('/api/get/{hash}', function (Request $request, $hash) use ($app) {
     return new BinaryFileResponse($path, 200, array(
         'Cache-Control' => 'public',
         'Last-Modified' => $createdAt,
+        'Content-Type' => $content->getContentType(),
         'Etag' => sprintf('content_%d_%d', $createdAt->getTimestamp(), $content->getId()),
     ));
 })
